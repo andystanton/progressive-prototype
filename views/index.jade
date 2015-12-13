@@ -25,12 +25,12 @@ html
         (function tick() {
           $http.get("http://localhost:3000/posts")
             .then(response => {
-              console.log(response)
+              //- console.log(response)
               $scope.posts = response.data;
             });
           $http.get("http://localhost:3000/drafts")
             .then(response => {
-              console.log(response)
+              //- console.log(response)
               $scope.drafts = response.data;
             });
           $timeout(tick, 1000);
