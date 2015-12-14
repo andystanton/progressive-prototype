@@ -66,7 +66,10 @@ app.put('/post', (req, res) => {
         }
       });
     }
-  }).then(() => res.sendStatus(204))
+  }).then(() => {
+    res.set('X-online', true)
+    res.sendStatus(204)
+  })
 });
 
 app.delete('/post/:id', (req, res) => {

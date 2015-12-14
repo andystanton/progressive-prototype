@@ -11,11 +11,11 @@ html
     script(type='text/javascript').
       if('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js', { scope: '/' })
-          .then(function(registration) { 
-                console.log("Service Worker Registered"); 
+          .then(function(registration) {
+                console.log("Service Worker Registered");
           });
-          
-        navigator.serviceWorker.ready.then(registration => { 
+
+        navigator.serviceWorker.ready.then(registration => {
            console.log("Service Worker Ready");
         });
       }
@@ -35,51 +35,59 @@ html
             });
           $timeout(tick, 1000);
         })();
-          
+
         $scope.newPost = () => {
           $scope.editpost = {
             state: 'draft'
           };
           $scope.mode = 'new'
         }
-        
+
         $scope.selectPost = (post) => {
           $scope.editpost = JSON.parse(JSON.stringify(post));
           $scope.mode = 'edit';
         }
-        
+
         $scope.savePost = (post) => {
           console.log(`saving ${post.title}`);
           console.log(post);
-          $http.put("/post", post);
+          $http.put("/post", post).then((response) => {
+            console.log(response.headers('X-Online'))
+          });
           if ($scope.mode == 'new') {
             $scope.newPost()
           }
         }
-        
+
         $scope.publishPost = (post) => {
           console.log(`publishing ${post.title}`);
           console.log(post);
           post.state = 'published';
-          $http.put("/post", post);
+          $http.put("/post", post).then((response) => {
+            console.log(response.headers('X-Online'))
+          });
           if ($scope.mode == 'new') {
             $scope.newPost()
           }
         }
-        
+
         $scope.withdrawPost = (post) => {
           console.log(`withdrawing ${post.title}`);
           console.log(post);
           post.state = 'draft';
-          $http.put("/post", post);
+          $http.put("/post", post).then((response) => {
+            console.log(response.headers('X-Online'))
+          });
           if ($scope.mode == 'new') {
             $scope.newPost()
           }
         }
-        
+
         $scope.deletePost = (id) => {
           console.log(`deleting ${id}`)
-          $http.delete(`/post/${id}`)
+          $http.delete(`/post/${id}`).then((response) => {
+            console.log(response.headers('X-Online'))
+          });
           $scope.newPost()
         }
       });
@@ -89,10 +97,10 @@ html
       div(class='row')
         div(class='col-md-4')
           div(id='editOptions')
-            h4 
+            h4
               | {{ mode == 'edit' ? 'Edit Post' : 'Create Post' }}
             p
-              | Title: 
+              | Title:
               br
               input(type='text', ng-model='editpost.title')
               br
@@ -121,4 +129,3 @@ html
           ul
             li(ng-repeat='x in posts', ng-click="selectPost(x)")
               | {{ x.title }}
-      
