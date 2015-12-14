@@ -23,5 +23,17 @@
   },
   "engines": {
     "node": ">=5.2.0"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "es6": true,
+      "jquery": true,
+      "node": true,
+      "serviceworker": true
+    },
+    "ecmaFeatures": {
+      "modules": true
+    }
   }
 }
