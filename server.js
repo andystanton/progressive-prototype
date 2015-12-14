@@ -1,6 +1,8 @@
+var bodyParser = require('body-parser');
 var express = require('express');
 var app = express();
-var bodyParser = require('body-parser');
+var server = require('http').createServer(app);
+var io = require('socket.io')(server);
 
 var Datastore = require('nedb'),
   db = new Datastore({
@@ -79,7 +81,14 @@ app.delete('/post/:id', (req, res) => {
   res.sendStatus(204)
 });
 
-var server = app.listen(3000, () => {
+io.on('connection', socket => {
+  console.log('a user connected');
+  socket.on('test channel', msg => {
+    console.log('message: ' + msg);
+  });
+});
+
+server.listen(3000, () => {
   var host = server.address().address;
   var port = server.address().port;
 

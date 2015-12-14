@@ -11,9 +11,17 @@ toolbox.precache([
   '/bower_components/jquery/dist/jquery.min.js'
 ]);
 
+toolbox.router.get('/socket.io', (request, values, options) => {
+  if (request.url.match(/\/socket\.io\/socket\.io\.js$/)) {
+    // TODO: handle long polling
+    console.log(`intercepted socket.io long polling request on: ${request.url}`)
+  }
+  return fetch(request)
+})
+
 toolbox.router.put('/post', (request, values, options) => {
-    console.log("intercepted network first");
-    return fetch(request)
+  console.log("intercepted network first");
+  return fetch(request)
     .then(response => {
       console.log("ONLINE")
       return response;
@@ -26,7 +34,7 @@ toolbox.router.put('/post', (request, values, options) => {
         }
       });
     });
-  });
+});
 
 
 toolbox.router.default = toolbox.networkFirst;

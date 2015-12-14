@@ -8,6 +8,9 @@ html
     script(src='/bower_components/angular/angular.min.js')
     script(src='/bower_components/jquery/dist/jquery.min.js')
     script(src='/bower_components/bootstrap/dist/js/bootstrap.min.js')
+    script(src='/socket.io/socket.io.js')
+    script(type='text/javascript').
+      var socket = io();
     script(type='text/javascript').
       if('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js', { scope: '/' })
@@ -33,6 +36,7 @@ html
               //- console.log(response)
               $scope.drafts = response.data;
             });
+          //- socket.emit('test channel', "ping");
           $timeout(tick, 1000);
         })();
 
