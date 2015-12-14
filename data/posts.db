@@ -1,4 +1,18 @@
+{"state":"draft","title":"test6","_id":"0d4BwGqjitnjMB6a"}
+{"state":"draft","title":"test3","_id":"1NUNrMzhGhFwdgAO"}
 {"title":"foo","state":"draft","_id":"1dVUaglEfhnW0fi4","content":"foo post content"}
 {"title":"bar","state":"draft","_id":"5qJEqR8eicirJOql","content":"bar post content"}
 {"state":"published","title":"baz","_id":"BteH5zfN91I88ywG","content":"baz post content"}
+{"state":"draft","title":"test5","_id":"CNTo2FdiYNiA4MVS"}
+{"state":"draft","title":"test","_id":"Ha1F7g3yKKB79aTh"}
 {"title":"baz","_id":"KLneefmybqFfxmos"}
+{"state":"draft","title":"test2","_id":"SFdflLvQluf4ypeg"}
+{"state":"draft","title":"test5","_id":"g4lNBtmUdik8V5Xc"}
+{"state":"draft","title":"test7","_id":"uJLB6FSoyLwyJKwy"}
+{"$$deleted":true,"_id":"uJLB6FSoyLwyJKwy"}
+{"$$deleted":true,"_id":"0d4BwGqjitnjMB6a"}
+{"$$deleted":true,"_id":"1NUNrMzhGhFwdgAO"}
+{"$$deleted":true,"_id":"CNTo2FdiYNiA4MVS"}
+{"$$deleted":true,"_id":"Ha1F7g3yKKB79aTh"}
+{"$$deleted":true,"_id":"SFdflLvQluf4ypeg"}
+{"$$deleted":true,"_id":"g4lNBtmUdik8V5Xc"}

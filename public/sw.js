@@ -5,6 +5,7 @@ toolbox.precache([
   '/sw.js',
   '/posts',
   '/drafts',
+  '/socket.io/socket.io.js',
   '/bower_components/angular/angular.min.js',
   '/bower_components/bootstrap/dist/css/bootstrap.min.css',
   '/bower_components/bootstrap/dist/js/bootstrap.min.js',
@@ -16,7 +17,7 @@ toolbox.router.get('/socket.io', (request, values, options) => {
     // TODO: handle long polling
     console.log(`intercepted socket.io long polling request on: ${request.url}`)
   }
-  return fetch(request)
+  return fetch(request).catch(error => console.log(error))
 })
 
 toolbox.router.put('/post', (request, values, options) => {

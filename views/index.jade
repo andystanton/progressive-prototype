@@ -15,12 +15,19 @@ html
       if('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js', { scope: '/' })
           .then(function(registration) {
-                console.log("Service Worker Registered");
+            console.log("Service Worker Registered");
           });
 
         navigator.serviceWorker.ready.then(registration => {
-           console.log("Service Worker Ready");
+          console.log("Service Worker Ready");
         });
+      }
+    script(type='text/javascript').
+      function S4() {
+        return (((1+Math.random())*0x10000)|0).toString(16).substring(1); 
+      }
+      function guid() {
+        return (S4() + S4() + "-" + S4() + "-4" + S4().substr(0,3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
       }
     script(type='text/javascript').
       var app = angular.module('myApp', []);
@@ -28,14 +35,15 @@ html
         (function tick() {
           $http.get("http://localhost:3000/posts")
             .then(response => {
-              //- console.log(response)
               $scope.posts = response.data;
             });
           $http.get("http://localhost:3000/drafts")
             .then(response => {
-              //- console.log(response)
               $scope.drafts = response.data;
             });
+          if ($scope.offlineDrafts) {
+            $scope.offlineDrafts.forEach(x => $scope.savePost(x))
+          }
           //- socket.emit('test channel', "ping");
           $timeout(tick, 1000);
         })();
@@ -47,7 +55,7 @@ html
           $scope.mode = 'new'
         }
 
-        $scope.selectPost = (post) => {
+        $scope.selectPost = post => {
           $scope.editpost = JSON.parse(JSON.stringify(post));
           $scope.mode = 'edit';
         }
@@ -55,8 +63,33 @@ html
         $scope.savePost = (post) => {
           console.log(`saving ${post.title}`);
           console.log(post);
-          $http.put("/post", post).then((response) => {
-            console.log(response.headers('X-Online'))
+          var writePost = post;
+          if ('tempId' in writePost) {
+            delete writePost['tempId'];
+          }
+          $http.put("/post", writePost).then(response => {
+            var online = JSON.parse(response.headers('X-Online'));
+            console.log(online)
+            if (!online) {
+              console.log("handling offline save draft")
+              if (!('offlineDrafts' in $scope)) {
+                console.log("creating offline drafts")
+                $scope.offlineDrafts = new Array();
+              }
+
+              if ('tmpId' in post && $scope.offlineDrafts.find(x => x.tmpId == post.tmpId)) {
+                console.log("removing post from drafts")
+                $scope.offlineDrafts = $scope.offlineDrafts.filter(x => x.tempId != post.tempId);
+              }
+              console.log("adding post to offline drafts")
+              post.tempId = guid();
+              //- $scope.offlineDrafts.push(post)
+
+            } else {
+              if ('tmpId' in post && 'offlineDrafts' in $scope) {
+                $scope.offlineDrafts = $scope.offlineDrafts.filter(x => x.tempId != post.tempId);
+              }
+            }
           });
           if ($scope.mode == 'new') {
             $scope.newPost()
@@ -125,6 +158,8 @@ html
           h4
             | Drafts
           ul
+            li(ng-repeat='x in offlineDrafts', ng-click="selectPost(x)")
+              | {{ x.title }}
             li(ng-repeat='x in drafts', ng-click="selectPost(x)")
               | {{ x.title }}
         div(class='col-md-4')
