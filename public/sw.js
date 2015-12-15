@@ -5,6 +5,7 @@ toolbox.precache([
   '/sw.js',
   '/posts',
   '/drafts',
+  '/indexcontroller.js',
   '/socket.io/socket.io.js',
   '/bower_components/angular/angular.min.js',
   '/bower_components/bootstrap/dist/css/bootstrap.min.css',

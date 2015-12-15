@@ -15,10 +15,12 @@ app.use(express.static('public'));
 app.use(bodyParser.json());
 app.locals.pretty = true;
 
-app.get('/', (req, res) =>
+app.get('/', (req, res) => {
+  res.set('X-online', true)
   res.render('index', {
     title: 'Prototype Progressive App'
-  }));
+  })
+});
 
 app.get('/posts', (req, res) =>
   new Promise((resolve, reject) =>
@@ -29,7 +31,10 @@ app.get('/posts', (req, res) =>
         reject(error)
       }
       resolve(docs)
-    })).then(docs => res.json(docs)));
+    })).then(docs => {
+      res.set('X-online', true)
+      res.json(docs)
+    }));
 
 app.get('/drafts', (req, res) =>
   new Promise((resolve, reject) =>
@@ -40,7 +45,10 @@ app.get('/drafts', (req, res) =>
         reject(error)
       }
       resolve(docs)
-    })).then(docs => res.json(docs)));
+    })).then(docs => {
+      res.set('X-online', true)
+      res.json(docs)
+    }));
 
 app.put('/post', (req, res) => {
   console.log("writing post with body")
@@ -78,6 +86,7 @@ app.delete('/post/:id', (req, res) => {
   db.remove({
     '_id': req.params.id
   })
+  res.set('X-online', true)
   res.sendStatus(204)
 });
 
