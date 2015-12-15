@@ -29,7 +29,6 @@ toolbox.router.put('/post', (request, values, options) => {
       return response;
     })
     .catch(error => {
-      console.log("OFFLINE")
       return new Response(request.body, {
         'headers': {
           'X-Online': false

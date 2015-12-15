@@ -16,7 +16,7 @@ app.use(bodyParser.json());
 app.locals.pretty = true;
 
 app.get('/', (req, res) => {
-  res.set('X-online', true)
+  res.set('X-Online', true)
   res.render('index', {
     title: 'Prototype Progressive App'
   })
@@ -32,7 +32,7 @@ app.get('/posts', (req, res) =>
       }
       resolve(docs)
     })).then(docs => {
-      res.set('X-online', true)
+      res.set('X-Online', true)
       res.json(docs)
     }));
 
@@ -46,7 +46,7 @@ app.get('/drafts', (req, res) =>
       }
       resolve(docs)
     })).then(docs => {
-      res.set('X-online', true)
+      res.set('X-Online', true)
       res.json(docs)
     }));
 
@@ -77,7 +77,7 @@ app.put('/post', (req, res) => {
       });
     }
   }).then(() => {
-    res.set('X-online', true)
+    res.set('X-Online', true)
     res.sendStatus(204)
   })
 });
@@ -86,7 +86,7 @@ app.delete('/post/:id', (req, res) => {
   db.remove({
     '_id': req.params.id
   })
-  res.set('X-online', true)
+  res.set('X-Online', true)
   res.sendStatus(204)
 });
 

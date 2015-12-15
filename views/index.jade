@@ -17,25 +17,23 @@ html
         div(class='col-md-4')
           div(id='editOptions')
             h4
-              | {{ mode == 'edit' ? 'Edit Post' : 'Create Post' }}
+              | {{ mode == 'edit' ? 'Edit Post' : 'Create Post' }}  
             p
               | Title:
-              br
-              input(type='text', ng-model='editpost.title')
-              br
+            input(type='text', ng-model='editpost.title')
+            p
               | Content:
-              br
-              input(type='textarea', ng-model='editpost.content')
-              br
-              br
-              input(type='button', value='Save Draft', ng-click="savePost(editpost)", ng-if="mode == 'new'")
-              input(type='button', value='Update', ng-click="savePost(editpost)", ng-if="mode == 'edit'")
-              input(type='button', value='Delete', ng-click="deletePost(editpost)", ng-if="mode == 'edit'")
-              input(type='button', value='Publish', ng-click="publishPost(editpost)", ng-if="editpost.state == 'draft'")
-              input(type='button', value='Withdraw', ng-click="withdrawPost(editpost)", ng-if="editpost.state == 'published'")
-              br
-              br
-              input(type='button', value='New post', ng-click="newPost()")
+            input(type='textarea', ng-model='editpost.content')
+            br
+            br
+            input(type='button', value='Save Draft', ng-click="savePost(editpost)", ng-if="mode == 'new'")
+            input(type='button', value='Update', ng-click="savePost(editpost)", ng-if="mode == 'edit'")
+            input(type='button', value='Delete', ng-click="deletePost(editpost)", ng-if="mode == 'edit'")
+            input(type='button', value='Publish', ng-click="publishPost(editpost)", ng-if="editpost.state == 'draft'")
+            input(type='button', value='Withdraw', ng-click="withdrawPost(editpost)", ng-if="editpost.state == 'published'")
+            br
+            br
+            input(type='button', value='New post', ng-click="newPost()")
         div(class='col-md-4')
           h4
             | Drafts
