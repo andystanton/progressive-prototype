@@ -54,6 +54,10 @@ app.put('/post', (req, res) => {
   console.log("writing post with body")
   console.log(req.body);
 
+  if ('_tmpId' in req.body) {
+    delete req.body['_tmpId'];
+  }
+
   return new Promise((resolve, reject) => {
     if (req.body._id) {
       console.log(`updating ${req.body._id}`)
