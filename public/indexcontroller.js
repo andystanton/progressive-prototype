@@ -102,10 +102,7 @@ app.controller('posts', ($scope, $http, $timeout) => {
   $scope.postModel = new PostModel();
 
   (function tick() {
-    Promise.all(
-      Object.keys($scope.postModel.drafts.offline).map(key =>
-        $scope.savePost($scope.postModel.drafts.offline[key], true))
-    ).then(() => Promise.all([
+    Promise.all([
       $http.get("http://localhost:3000/posts")
       .then(response => {
         $scope.postModel.addOnlinePosts(response.data);
@@ -122,9 +119,12 @@ app.controller('posts', ($scope, $http, $timeout) => {
       .then(response => {
         $scope.postModel.addOfflineDrafts(response.data);
       }),
-    ])).catch(() => {});
+    ]).then(() => Promise.all(
+      Object.keys($scope.postModel.drafts.offline).map(key =>
+        $scope.savePost($scope.postModel.drafts.offline[key], true))
+    )).catch(() => {});
     //- socket.emit('test channel', "ping");
-    $timeout(tick, 3000);
+    $timeout(tick, 1000);
   })();
 
   $scope.newPost = () => {
