@@ -21,8 +21,8 @@ function openCache(options) {
   return caches.open(cacheName);
 }
 
-function lock(openingPromise) {
-  return mutex.promise().then(mutex => mutex.lock()).then(() => openingPromise);
+function lock() {
+  return mutex.promise().then(mutex => mutex.lock());
 }
 
 function unlock(passThrough) {
@@ -42,17 +42,18 @@ toolbox.precache([
   '/bower_components/angular/angular.min.js',
   '/bower_components/bootstrap/dist/css/bootstrap.min.css',
   '/bower_components/bootstrap/dist/js/bootstrap.min.js',
-  '/bower_components/jquery/dist/jquery.min.js'
+  '/bower_components/jquery/dist/jquery.min.js',
+  '/bower_components/mutex-promise/index.js'
 ]);
 
 toolbox.router.get('/socket.io', (request, values, options) => {
-  if (request.url.match(/\/socket\.io\/socket\.io\.js$/)) {
-  }
+  if (request.url.match(/\/socket\.io\/socket\.io\.js$/)) {}
   return fetch(request).catch(error => console.log(error))
 })
 
 toolbox.router.put('/post', (request, values, options) => {
-  return lock(fetch(request.clone())).then(response => {
+  return lock().then(() =>
+      fetch(request.clone())).then(response => {
       return request.clone().json().then(offlinePost => {
         var targetEndpoint;
         if (offlinePost.state == 'published') {
@@ -115,7 +116,7 @@ toolbox.router.put('/post', (request, values, options) => {
 });
 
 toolbox.router.get('/offlineposts', (request, values, options) => {
-  return lock(openCache(options)).then(cache => cache.match(request)).then(content => {
+  return lock().then(() => openCache(options)).then(cache => cache.match(request)).then(content => {
     if (!content) {
       var response = new Response(JSON.stringify([]), {
         'status': 200
@@ -128,7 +129,7 @@ toolbox.router.get('/offlineposts', (request, values, options) => {
 });
 
 toolbox.router.get('/offlinedrafts', (request, values, options) => {
-  return lock(openCache(options)).then(cache => cache.match(request)).then(content => {
+  return lock().then(() => openCache(options)).then(cache => cache.match(request)).then(content => {
     if (!content) {
       var response = new Response(JSON.stringify([]), {
         'status': 200

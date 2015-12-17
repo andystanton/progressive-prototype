@@ -1,7 +1,6 @@
 "use strict"
 
 // initialise service worker
-
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js', {
       scope: '/'
@@ -96,14 +95,26 @@ function guid() {
   return (S4() + S4() + "-" + S4() + "-4" + S4().substr(0, 3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
 }
 
+function lock() {
+  return mutex.promise().then(mutex => mutex.lock());
+}
+
+function unlock(passThrough) {
+  return new Promise((resolve, reject) => {
+    mutex.unlock();
+    resolve(passThrough);
+  });
+}
+
 var app = angular.module('myApp', []);
+var mutex = new MutexPromise(guid());
 // var socket = io();
 
 app.controller('posts', ($scope, $http, $timeout) => {
   $scope.postModel = new PostModel();
 
   (function tick() {
-    Promise.all([
+    lock().then(() => Promise.all([
       $http.get("http://localhost:3000/posts")
       .then(response => {
         $scope.postModel.addOnlinePosts(response.data);
@@ -120,13 +131,13 @@ app.controller('posts', ($scope, $http, $timeout) => {
       .then(response => {
         $scope.postModel.addOfflineDrafts(response.data);
       }),
-    ]).then(() => Promise.all(
+    ])).then(() => Promise.all(
       Object.keys($scope.postModel.drafts.offline).map(key => {
         var post = $scope.postModel.drafts.offline[key];
         return $scope.savePost(post, true).then(online => {
           if (online) delete $scope.postModel.drafts.offline[key];
         })
-      }))).catch(() => {});
+      }))).catch(() => {}).then(unlock);
     //- socket.emit('test channel', "ping");
     $timeout(tick, 500);
   })();
