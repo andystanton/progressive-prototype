@@ -1,4 +1,15 @@
 importScripts('bower_components/sw-toolbox/sw-toolbox.js');
+importScripts('bower_components/mutex-promise/index.js');
+
+function S4() {
+  return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+}
+
+function guid() {
+  return (S4() + S4() + "-" + S4() + "-4" + S4().substr(0, 3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
+}
+
+var mutex = new MutexPromise(guid());
 
 // borrowed from sw-toolbox
 function openCache(options) {
@@ -12,6 +23,16 @@ function openCache(options) {
   return caches.open(cacheName);
 }
 
+function lock(openingPromise) {
+  return mutex.promise().then(mutex => mutex.lock()).then(() => openingPromise);
+}
+
+function unlock(passThrough) {
+  return new Promise((resolve, reject) => {
+    mutex.unlock();
+    resolve(passThrough);
+  })
+}
 
 toolbox.precache([
   '/',
@@ -35,11 +56,8 @@ toolbox.router.get('/socket.io', (request, values, options) => {
 })
 
 toolbox.router.put('/post', (request, values, options) => {
-  console.log("intercepted network first");
-  return fetch(request.clone())
-    .then(response => {
-      console.log("ONLINE")
-      request.clone().json().then(offlinePost => {
+  return lock(fetch(request.clone())).then(response => {
+      return request.clone().json().then(offlinePost => {
         var targetEndpoint;
         if (offlinePost.state == 'published') {
           targetEndpoint = '/offlineposts'
@@ -51,6 +69,8 @@ toolbox.router.put('/post', (request, values, options) => {
             if (cached) {
               return cached.json().then(offlinePosts => {
                 offlinePosts = offlinePosts.filter(post => post._tmpId != offlinePost._tmpId)
+                console.log("writing posts:")
+                offlinePosts.forEach(x => console.log(` - ${JSON.stringify(x)}`))
                 var newResponse = new Response(
                   JSON.stringify(offlinePosts), {
                     "status": 200,
@@ -65,8 +85,6 @@ toolbox.router.put('/post', (request, values, options) => {
             }
           }));
       });
-
-      return response;
     })
     .catch(error =>
       request.clone().json().then(offlinePost => {
@@ -88,7 +106,6 @@ toolbox.router.put('/post', (request, values, options) => {
               openCache(options).then(cache => {
                 offlinePosts = offlinePosts.filter(post => post._tmpId != offlinePost._tmpId)
                 offlinePosts.push(offlinePost);
-                console.log(offlinePosts)
                 var newResponse = new Response(
                   JSON.stringify(offlinePosts), {
                     "status": 200,
@@ -100,7 +117,7 @@ toolbox.router.put('/post', (request, values, options) => {
                 return newResponse;
               }))
           }))
-      }));
+      })).then(response => unlock(response));
 });
 
 toolbox.router.get('/offlineposts', (request, values, options) => {
@@ -119,7 +136,7 @@ toolbox.router.get('/offlineposts', (request, values, options) => {
 });
 
 toolbox.router.get('/offlinedrafts', (request, values, options) => {
-  return openCache(options).then(cache => cache.match(request)).then(content => {
+  return lock(openCache(options)).then(cache => cache.match(request)).then(content => {
     if (!content) {
       // console.log("returning new response")
       var response = new Response(JSON.stringify([]), {
@@ -130,7 +147,7 @@ toolbox.router.get('/offlinedrafts', (request, values, options) => {
       // console.log("returning cached response")
       return content
     }
-  })
+  }).then(unlock)
 });
 
 toolbox.router.default = toolbox.networkFirst;

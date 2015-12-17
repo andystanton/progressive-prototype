@@ -64,7 +64,7 @@ class PostModel {
   }
 
   addOfflineDraft(post) {
-    console.log(`adding offline draft with tmpId: ${post._tmpId}`)
+    // console.log(`adding offline draft with tmpId: ${post._tmpId}`)
     this._drafts.offline[post._tmpId] = post;
   }
 
@@ -73,13 +73,14 @@ class PostModel {
   }
 
   addOfflineDrafts(posts) {
-    console.log(`adding offline drafts`)
-    console.log(JSON.stringify(posts))
+    // console.log(`adding offline drafts`)
+    // console.log(JSON.stringify(posts))
     var keepers = Object.keys(this._drafts.offline).filter(tmpId => {
       posts.find(post => post._tmpId == tmpId)
     });
     Object.keys(this._drafts.offline).forEach(tmpId => {
       if (!keepers.find(x => x == tmpId)) {
+        // if (!posts.find(post => post._tmpId == tmpId)) {
         delete(this._drafts.offline[tmpId])
       }
     })
@@ -120,11 +121,14 @@ app.controller('posts', ($scope, $http, $timeout) => {
         $scope.postModel.addOfflineDrafts(response.data);
       }),
     ]).then(() => Promise.all(
-      Object.keys($scope.postModel.drafts.offline).map(key =>
-        $scope.savePost($scope.postModel.drafts.offline[key], true))
-    )).catch(() => {});
+      Object.keys($scope.postModel.drafts.offline).map(key => {
+        var post = $scope.postModel.drafts.offline[key];
+        return $scope.savePost(post, true).then(online => {
+          if (online) delete $scope.postModel.drafts.offline[key];
+        })
+      }))).catch(() => {});
     //- socket.emit('test channel', "ping");
-    $timeout(tick, 1000);
+    $timeout(tick, 2000);
   })();
 
   $scope.newPost = () => {
@@ -150,6 +154,7 @@ app.controller('posts', ($scope, $http, $timeout) => {
       if ($scope.mode == 'new' && (!isSync || online)) {
         $scope.newPost()
       }
+      return online;
     });
   }
 

@@ -5,6 +5,7 @@
   "dependencies": {
     "angular": "~1.4.0",
     "bootstrap": "~3.3.6",
-    "sw-toolbox": "~3.0.0"
+    "sw-toolbox": "~3.0.0",
+    "mutex-promise": "~0.1.0"
   }
 }
