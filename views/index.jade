@@ -5,6 +5,7 @@ html
     meta(name='viewport', content='width=device-width, initial-scale=1')
     title!= title
     link(href='/bower_components/bootstrap/dist/css/bootstrap.min.css', rel='stylesheet')
+    link(href='style.css', rel='stylesheet')
     script(src='/bower_components/angular/angular.min.js')
     script(src='/bower_components/jquery/dist/jquery.min.js')
     script(src='/bower_components/bootstrap/dist/js/bootstrap.min.js')
@@ -12,44 +13,65 @@ html
     script(src='/socket.io/socket.io.js')
     script(src='/indexcontroller.js')
   body
-    h1!= title
+    div(class='row')
+      div(class='col-md-12 app-title')
+        h1
+          != title
     div(ng-app='myApp', ng-controller='posts', ng-init='newPost()')
       div(class='row')
-        div(class='col-md-4')
+        div(class='col-md-12 stream-title')
+          h4
+            | Arbitrary Stream
+      div(class='row body')
+        div(class='col-md-4 edit-column')
           div(id='editOptions')
             h4
               | {{ mode == 'edit' ? 'Edit Post' : 'Create Post' }}  
-            p
-              | Title:
-            input(type='text', ng-model='editpost.title')
-            p
-              | Content:
-            input(type='textarea', ng-model='editpost.content')
-            p
-              | Updated:
-            p
-              | {{ mode == 'edit' ? editpost.updated : '-' }}  
-            input(type='button', value='Save Draft', ng-click="savePost(editpost)", ng-if="mode == 'new'")
-            input(type='button', value='Update', ng-click="savePost(editpost)", ng-if="mode == 'edit'")
-            input(type='button', value='Delete', ng-click="deletePost(editpost)", ng-if="mode == 'edit'")
-            input(type='button', value='Publish', ng-click="publishPost(editpost)", ng-if="editpost.state == 'draft'")
-            input(type='button', value='Withdraw', ng-click="withdrawPost(editpost)", ng-if="editpost.state == 'published'")
-            br
-            br
-            input(type='button', value='New post', ng-click="newPost()")
-        div(class='col-md-4')
+            div(class='row post-buttons')
+              div(class='col-md-3')
+                input(type='button', value='New post', ng-click="newPost()")
+              div(class='col-md-9 text-right')
+                input(type='button', value='Save Draft', ng-click="savePost(editpost)", ng-if="mode == 'new'")
+                input(type='button', value='Update', ng-click="savePost(editpost)", ng-if="mode == 'edit'")
+                input(type='button', value='Delete', ng-click="deletePost(editpost)", ng-if="mode == 'edit'")
+                input(type='button', value='Publish', ng-click="publishPost(editpost)", ng-if="editpost.state == 'draft'")
+                input(type='button', value='Withdraw', ng-click="withdrawPost(editpost)", ng-if="editpost.state == 'published'")
+            input(type='text', ng-model='editpost.title', class='text-entry text-entry-title', placeholder='Headline')
+            textarea(ng-model='editpost.content', class='text-entry', rows='5')
+            p(class='updated-text')
+              span(ng-if="mode == 'edit'")
+                b
+                  | Updated: 
+                | {{ editpost.updated }}
+        div(class='col-md-4 drafts-column')
           h4
             | Drafts
-          ul
-            li(ng-repeat='x in postModel.drafts.offline | orderObjectBy:"updated":true', ng-click="selectPost(x)")
-              | {{ x.title }}
-            li(ng-repeat='x in postModel.drafts.online | orderObjectBy:"updated":true', ng-click="selectPost(x)")
-              | {{ x.title }}
-        div(class='col-md-4')
+          ul(class='list-unstyled')
+            li(ng-repeat='x in postModel.drafts.offline | orderObjectBy:"updated":true', ng-click="selectPost(x)", class='selectable-post')
+              span(class='post-heading') 
+                | {{ x.title }}
+              i(class='inline-icon')
+                | autorenew
+              p(class='content')
+                | {{ x.content }}
+            li(ng-repeat='x in postModel.drafts.online | orderObjectBy:"updated":true', ng-click="selectPost(x)", class='selectable-post')
+              span(class='post-heading') 
+                | {{ x.title }}
+              p(class='content')
+                | {{ x.content }}
+        div(class='col-md-4 live-column')
           h4
-            | Published
-          ul
-            li(ng-repeat='x in postModel.posts.offline | orderObjectBy:"updated":true', ng-click="selectPost(x)")
-              | {{ x.title }}
-            li(ng-repeat='x in postModel.posts.online | orderObjectBy:"updated":true', ng-click="selectPost(x)")
-              | {{ x.title }}
+            | Live
+          ul(class='list-unstyled')
+            li(ng-repeat='x in postModel.posts.offline | orderObjectBy:"updated":true', ng-click="selectPost(x)", class='selectable-post')
+              span(class='post-heading') 
+                | {{ x.title }}
+              i(class='inline-icon')
+                | autorenew
+              p(class='content')
+                | {{ x.content }}
+            li(ng-repeat='x in postModel.posts.online | orderObjectBy:"updated":true', ng-click="selectPost(x)", class='selectable-post')
+              span(class='post-heading') 
+                | {{ x.title }}
+              p(class='content')
+                | {{ x.content }}

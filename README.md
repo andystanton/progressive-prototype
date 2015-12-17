@@ -28,6 +28,7 @@ The application is now serving at `http://localhost:3000/`.
 #### Draft functionality
 
   - [x] Display online and offline drafts
+  - [ ] Indicate draft hasn't synced yet
   - [x] Order drafts by updated date/time
   - [x] Save drafts when online
   - [x] Save drafts when offline
@@ -43,6 +44,7 @@ The application is now serving at `http://localhost:3000/`.
 #### Post functionality
 
   - [x] Display online and offline posts
+  - [ ] Indicate post hasn't synced yet
   - [x] Order posts by updated date/time
   - [ ] Publish new posts when online
   - [ ] Publish new posts when offline

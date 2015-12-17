@@ -18,7 +18,7 @@ app.locals.pretty = true;
 app.get('/', (req, res) => {
   res.set('X-Online', true)
   res.render('index', {
-    title: 'Prototype Progressive App'
+    title: 'mori'
   })
 });
 

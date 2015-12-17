@@ -35,6 +35,7 @@ function unlock(passThrough) {
 toolbox.precache([
   '/',
   '/sw.js',
+  '/style.css',
   '/posts',
   '/drafts',
   '/indexcontroller.js',
