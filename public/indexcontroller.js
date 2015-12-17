@@ -110,6 +110,20 @@ var app = angular.module('myApp', []);
 var mutex = new MutexPromise(guid());
 // var socket = io();
 
+app.filter('orderObjectBy', function() {
+  return function(items, field, reverse) {
+    var filtered = [];
+    angular.forEach(items, function(item) {
+      filtered.push(item);
+    });
+    filtered.sort(function (a, b) {
+      return (a[field] > b[field] ? 1 : -1);
+    });
+    if(reverse) filtered.reverse();
+    return filtered;
+  };
+});
+
 app.controller('posts', ($scope, $http, $timeout) => {
   $scope.postModel = new PostModel();
 
@@ -157,6 +171,9 @@ app.controller('posts', ($scope, $http, $timeout) => {
   $scope.savePost = (post, isSync) => {
     if (!('_tmpId' in post)) {
       post._tmpId = guid()
+    }
+    if (!isSync) {
+      post.updated = new Date().toJSON();
     }
     return $http.put("/post", post).then(response => {
       var online = JSON.parse(response.headers('X-Online'));

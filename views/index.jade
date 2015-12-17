@@ -25,8 +25,10 @@ html
             p
               | Content:
             input(type='textarea', ng-model='editpost.content')
-            br
-            br
+            p
+              | Updated:
+            p
+              | {{ mode == 'edit' ? editpost.updated : '-' }}  
             input(type='button', value='Save Draft', ng-click="savePost(editpost)", ng-if="mode == 'new'")
             input(type='button', value='Update', ng-click="savePost(editpost)", ng-if="mode == 'edit'")
             input(type='button', value='Delete', ng-click="deletePost(editpost)", ng-if="mode == 'edit'")
@@ -39,15 +41,15 @@ html
           h4
             | Drafts
           ul
-            li(ng-repeat='x in postModel.drafts.offline', ng-click="selectPost(x)")
+            li(ng-repeat='x in postModel.drafts.offline | orderObjectBy:"updated":true', ng-click="selectPost(x)")
               | {{ x.title }}
-            li(ng-repeat='x in postModel.drafts.online', ng-click="selectPost(x)")
+            li(ng-repeat='x in postModel.drafts.online | orderObjectBy:"updated":true', ng-click="selectPost(x)")
               | {{ x.title }}
         div(class='col-md-4')
           h4
             | Published
           ul
-            li(ng-repeat='x in postModel.posts.offline', ng-click="selectPost(x)")
+            li(ng-repeat='x in postModel.posts.offline | orderObjectBy:"updated":true', ng-click="selectPost(x)")
               | {{ x.title }}
-            li(ng-repeat='x in postModel.posts.online', ng-click="selectPost(x)")
+            li(ng-repeat='x in postModel.posts.online | orderObjectBy:"updated":true', ng-click="selectPost(x)")
               | {{ x.title }}
