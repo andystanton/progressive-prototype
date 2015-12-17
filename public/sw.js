@@ -44,7 +44,11 @@ toolbox.precache([
   '/bower_components/bootstrap/dist/css/bootstrap.min.css',
   '/bower_components/bootstrap/dist/js/bootstrap.min.js',
   '/bower_components/jquery/dist/jquery.min.js',
-  '/bower_components/mutex-promise/index.js'
+  '/bower_components/mutex-promise/index.js',
+  '/bower_components/material-design-icons/iconfont/MaterialIcons-Regular.eot',
+  '/bower_components/material-design-icons/iconfontMaterialIcons-Regular.woff2',
+  '/bower_components/material-design-icons/iconfont/MaterialIcons-Regular.woff',
+  '/bower_components/material-design-icons/iconfont/MaterialIcons-Regular.ttf'
 ]);
 
 toolbox.router.get('/socket.io', (request, values, options) => {
