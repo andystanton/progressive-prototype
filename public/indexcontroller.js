@@ -1,7 +1,6 @@
 "use strict"
 
 // initialise service worker
-
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js', {
       scope: '/'
@@ -43,84 +42,48 @@ class PostModel {
     this._posts = posts;
   }
 
-  addPost(post, online) {
-    if (online) {
-      this._posts.online[post._id] = post;
-    } else {
-      this._posts.offline[post._tmpId] = post;
-    }
+  addOnlinePost(post) {
+    this._posts.online[post._id] = post;
   }
 
-  addDraft(post, online) {
-    if (online) {
-      if (!this.containsDraftById(post._id, false)) {
-        this._drafts.online[post._id] = post;
+  addOfflinePost(post) {
+    this._posts.offline[post._tmpId] = post;
+  }
+
+  addOnlinePosts(posts) {
+    posts.forEach(post => this.addOnlinePost(post))
+  }
+
+  addOfflinePosts(posts) {
+    posts.forEach(post => this.addOfflinePost(post))
+  }
+
+  addOnlineDraft(post) {
+    this._drafts.online[post._id] = post;
+  }
+
+  addOfflineDraft(post) {
+    // console.log(`adding offline draft with tmpId: ${post._tmpId}`)
+    this._drafts.offline[post._tmpId] = post;
+  }
+
+  addOnlineDrafts(posts) {
+    posts.forEach(post => this.addOnlineDraft(post))
+  }
+
+  addOfflineDrafts(posts) {
+    // console.log(`adding offline drafts`)
+    // console.log(JSON.stringify(posts))
+    var keepers = Object.keys(this._drafts.offline).filter(tmpId => {
+      posts.find(post => post._tmpId == tmpId)
+    });
+    Object.keys(this._drafts.offline).forEach(tmpId => {
+      if (!keepers.find(x => x == tmpId)) {
+        // if (!posts.find(post => post._tmpId == tmpId)) {
+        delete(this._drafts.offline[tmpId])
       }
-    } else {
-      this._drafts.offline[post._tmpId] = post;
-    }
-  }
-
-  addPosts(posts, online) {
-    posts.forEach(p => this.addPost(p, online))
-  }
-
-  addDrafts(posts, online) {
-    posts.forEach(p => this.addDraft(p, online))
-  }
-
-  containsPost(id, online) {
-    if (online) {
-      return id in this._posts.online;
-    } else {
-      return id in this._posts.offline;
-    }
-  }
-
-  containsDraftByTmpId(id, online) {
-    return !online || id in this._drafts.offline;
-  }
-
-  containsDraftById(id, online) {
-    if (online) {
-      return id in this._drafts.online;
-    } else {
-      for (var entry in this._drafts.offline) {
-        console.log(entry)
-        if (entry._id == id) {
-          return true;
-        }
-      }
-    }
-  }
-
-  removePost(post, online) {
-    if (online) {
-      if (this.containsPost(post._id, online)) {
-        delete this._posts.online[post._id];
-      }
-    } else {
-      if (this.containsPost(post._tmpId, online)) {
-        delete this._posts.offline[post._tmpId]
-      }
-    }
-  }
-
-  removeDraft(post, online) {
-    if (online) {
-      console.log("removing online draft")
-      if (this.containsDraftById(post._id, online)) {
-        delete this._drafts.online[post._id]
-      }
-    } else {
-      console.log("removing offline draft")
-      console.log("online value is " + online)
-      if (this.containsDraftByTmpId(post._tmpId, online)) {
-        console.log("deleting draft: " + post._tmpId)
-        delete this._drafts.offline[post._tmpId]
-        console.log("deleted draft: " + post._tmpId)
-      }
-    }
+    })
+    posts.forEach(post => this.addOfflineDraft(post))
   }
 }
 
@@ -132,27 +95,65 @@ function guid() {
   return (S4() + S4() + "-" + S4() + "-4" + S4().substr(0, 3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
 }
 
+function lock() {
+  return mutex.promise().then(mutex => mutex.lock());
+}
+
+function unlock(passThrough) {
+  return new Promise((resolve, reject) => {
+    mutex.unlock();
+    resolve(passThrough);
+  });
+}
+
 var app = angular.module('myApp', []);
-var socket = io();
+var mutex = new MutexPromise(guid());
+// var socket = io();
+
+app.filter('orderObjectBy', function() {
+  return function(items, field, reverse) {
+    var filtered = [];
+    angular.forEach(items, function(item) {
+      filtered.push(item);
+    });
+    filtered.sort(function (a, b) {
+      return (a[field] > b[field] ? 1 : -1);
+    });
+    if(reverse) filtered.reverse();
+    return filtered;
+  };
+});
 
 app.controller('posts', ($scope, $http, $timeout) => {
   $scope.postModel = new PostModel();
 
   (function tick() {
-    $http.get("http://localhost:3000/posts")
+    lock().then(() => Promise.all([
+      $http.get("http://localhost:3000/posts")
       .then(response => {
-        $scope.postModel.addPosts(response.data, true);
-      });
-    $http.get("http://localhost:3000/drafts")
+        $scope.postModel.addOnlinePosts(response.data);
+      }),
+      $http.get("http://localhost:3000/drafts")
       .then(response => {
-        $scope.postModel.addDrafts(response.data, true);
-      });
-
-    for (var key in $scope.postModel.drafts.offline) {
-      $scope.savePost($scope.postModel.drafts.offline[key])
-    }
+        $scope.postModel.addOnlineDrafts(response.data);
+      }),
+      $http.get("http://localhost:3000/offlineposts")
+      .then(response => {
+        $scope.postModel.addOfflinePosts(response.data);
+      }),
+      $http.get("http://localhost:3000/offlinedrafts")
+      .then(response => {
+        $scope.postModel.addOfflineDrafts(response.data);
+      }),
+    ])).then(() => Promise.all(
+      Object.keys($scope.postModel.drafts.offline).map(key => {
+        var post = $scope.postModel.drafts.offline[key];
+        return $scope.savePost(post, true).then(online => {
+          if (online) delete $scope.postModel.drafts.offline[key];
+        })
+      }))).catch(() => {}).then(unlock);
     //- socket.emit('test channel', "ping");
-    $timeout(tick, 1000);
+    $timeout(tick, 500);
   })();
 
   $scope.newPost = () => {
@@ -167,36 +168,20 @@ app.controller('posts', ($scope, $http, $timeout) => {
     $scope.mode = 'edit';
   }
 
-  $scope.savePost = (post) => {
-    console.log(`saving ${post.title}`);
-    console.log(post);
-    var writePost = JSON.parse(JSON.stringify(post));
-    if ('_tmpId' in writePost) {
-      delete writePost['_tmpId'];
+  $scope.savePost = (post, isSync) => {
+    if (!('_tmpId' in post)) {
+      post._tmpId = guid()
     }
-    $http.put("/post", writePost).then(response => {
+    if (!isSync) {
+      post.updated = new Date().toJSON();
+    }
+    return $http.put("/post", post).then(response => {
       var online = JSON.parse(response.headers('X-Online'));
-      console.log(online)
-      if (online) {
-        if (post._tmpId) {
-          $scope.postModel.removeDraft(post, false)
-        } else if (post._id) {
-          $scope.postModel.removePost(post, false)
-          $scope.postModel.removeDraft(post, true)
-        }
-      } else {
-        if (post.state == 'draft') {
-          if (!post._tmpId) {
-            post._tmpId = guid();
-            $scope.postModel.removeDraft(post, true)
-            $scope.postModel.addDraft(post, false)
-          }
-        }
+      if ($scope.mode == 'new' && (!isSync || online)) {
+        $scope.newPost()
       }
+      return online;
     });
-    if ($scope.mode == 'new') {
-      $scope.newPost()
-    }
   }
 
   $scope.publishPost = (post) => {
@@ -217,7 +202,7 @@ app.controller('posts', ($scope, $http, $timeout) => {
     console.log(`withdrawing ${post.title}`);
     console.log(post);
     post.state = 'draft';
-    $http.put("/post", post).then((response) => {
+    $http.put("/post", post).then(response => {
       var online = response.headers('X-Online');
       console.log(online)
       $scope.postModel.removePost(post, online)
@@ -229,9 +214,7 @@ app.controller('posts', ($scope, $http, $timeout) => {
 
   $scope.deletePost = (post) => {
     console.log(`deleting ${post._id}`)
-    $http.delete(`/post/${post._id}`).then((response) => {
-      var online = response.headers('X-Online');
-      console.log(online)
+    $http.delete(`/post/${post._id}`).then(response => {
       $scope.postModel.removeDraft(post, online)
       $scope.postModel.removePost(post, online)
     });
