@@ -128,7 +128,7 @@ app.controller('posts', ($scope, $http, $timeout) => {
         })
       }))).catch(() => {});
     //- socket.emit('test channel', "ping");
-    $timeout(tick, 2000);
+    $timeout(tick, 500);
   })();
 
   $scope.newPost = () => {
@@ -144,8 +144,6 @@ app.controller('posts', ($scope, $http, $timeout) => {
   }
 
   $scope.savePost = (post, isSync) => {
-    console.log(`saving ${post.title}`);
-    console.log(post);
     if (!('_tmpId' in post)) {
       post._tmpId = guid()
     }
@@ -176,7 +174,7 @@ app.controller('posts', ($scope, $http, $timeout) => {
     console.log(`withdrawing ${post.title}`);
     console.log(post);
     post.state = 'draft';
-    $http.put("/post", post).then((response) => {
+    $http.put("/post", post).then(response => {
       var online = response.headers('X-Online');
       console.log(online)
       $scope.postModel.removePost(post, online)
@@ -188,9 +186,7 @@ app.controller('posts', ($scope, $http, $timeout) => {
 
   $scope.deletePost = (post) => {
     console.log(`deleting ${post._id}`)
-    $http.delete(`/post/${post._id}`).then((response) => {
-      var online = response.headers('X-Online');
-      console.log(online)
+    $http.delete(`/post/${post._id}`).then(response => {
       $scope.postModel.removeDraft(post, online)
       $scope.postModel.removePost(post, online)
     });

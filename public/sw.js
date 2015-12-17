@@ -18,8 +18,6 @@ function openCache(options) {
     cacheName = options.cache.name;
   }
   cacheName = cacheName || toolbox.options.cache.name;
-
-  // console.log('Opening cache "' + cacheName + '"', options);
   return caches.open(cacheName);
 }
 
@@ -31,7 +29,7 @@ function unlock(passThrough) {
   return new Promise((resolve, reject) => {
     mutex.unlock();
     resolve(passThrough);
-  })
+  });
 }
 
 toolbox.precache([
@@ -49,8 +47,6 @@ toolbox.precache([
 
 toolbox.router.get('/socket.io', (request, values, options) => {
   if (request.url.match(/\/socket\.io\/socket\.io\.js$/)) {
-    // TODO: handle long polling
-    console.log(`intercepted socket.io long polling request on: ${request.url}`)
   }
   return fetch(request).catch(error => console.log(error))
 })
@@ -69,13 +65,11 @@ toolbox.router.put('/post', (request, values, options) => {
             if (cached) {
               return cached.json().then(offlinePosts => {
                 offlinePosts = offlinePosts.filter(post => post._tmpId != offlinePost._tmpId)
-                console.log("writing posts:")
-                offlinePosts.forEach(x => console.log(` - ${JSON.stringify(x)}`))
                 var newResponse = new Response(
                   JSON.stringify(offlinePosts), {
-                    "status": 200,
-                    "headers": {
-                      "X-Online": false
+                    'status': 200,
+                    'headers': {
+                      'X-Online': false
                     }
                   });
                 return cache.put(new Request(targetEndpoint), newResponse)
@@ -108,43 +102,39 @@ toolbox.router.put('/post', (request, values, options) => {
                 offlinePosts.push(offlinePost);
                 var newResponse = new Response(
                   JSON.stringify(offlinePosts), {
-                    "status": 200,
-                    "headers": {
-                      "X-Online": false
+                    'status': 200,
+                    'headers': {
+                      'X-Online': false
                     }
                   });
                 cache.put(new Request(targetEndpoint), newResponse.clone())
                 return newResponse;
               }))
           }))
-      })).then(response => unlock(response));
+      })).then(unlock);
 });
 
 toolbox.router.get('/offlineposts', (request, values, options) => {
-  return openCache(options).then(cache => cache.match(request)).then(content => {
+  return lock(openCache(options)).then(cache => cache.match(request)).then(content => {
     if (!content) {
-      // console.log("returning new response")
       var response = new Response(JSON.stringify([]), {
-        "status": 200
+        'status': 200
       })
       return openCache(options).then(cache => cache.put(request, response.clone())).then(() => response);
     } else {
-      // console.log("returning cached response")
       return content
     }
-  })
+  }).then(unlock)
 });
 
 toolbox.router.get('/offlinedrafts', (request, values, options) => {
   return lock(openCache(options)).then(cache => cache.match(request)).then(content => {
     if (!content) {
-      // console.log("returning new response")
       var response = new Response(JSON.stringify([]), {
-        "status": 200
+        'status': 200
       })
       return openCache(options).then(cache => cache.put(request, response.clone())).then(() => response);
     } else {
-      // console.log("returning cached response")
       return content
     }
   }).then(unlock)
