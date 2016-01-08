@@ -92,6 +92,11 @@ app.controller('posts', ($scope, $http, $timeout, localStorageService) => {
         $scope.newPost()
       }
       if (!online) $scope.updatePostModel(postModel => {
+        if (post._id && post._tmpId) {
+          delete $scope.postModel.posts[post._id];
+          delete $scope.postModel.drafts[post._id];
+        }
+
         if (post.state == 'published') {
           addPost(postModel, post)
         } else {
@@ -129,11 +134,29 @@ app.controller('posts', ($scope, $http, $timeout, localStorageService) => {
     Promise.all([
         $http.get("http://localhost:3000/posts")
         .then(response => {
-          addPosts($scope.postModel, response.data);
+          var in_progress = [];
+          response.data.forEach(post => {
+            Object.keys($scope.offlinePostModel.posts).forEach(key => {
+              if (post._id == key) in_progress.push(post)
+            });
+            Object.keys($scope.offlinePostModel.drafts).forEach(key => {
+              if (post._id == key) in_progress.push(post)
+            });
+          });
+          addPosts($scope.postModel, response.data.filter(post => !(in_progress.reduce((p, c) => p || c == post._id, false))));
         }),
         $http.get("http://localhost:3000/drafts")
         .then(response => {
-          addDrafts($scope.postModel, response.data);
+          var in_progress = [];
+          response.data.forEach(post => {
+            Object.keys($scope.offlinePostModel.posts).forEach(key => {
+              if (post._id == key) in_progress.push(post)
+            });
+            Object.keys($scope.offlinePostModel.drafts).forEach(key => {
+              if (post._id == key) in_progress.push(post)
+            });
+          });
+          addDrafts($scope.postModel, response.data.filter(post => !(in_progress.reduce((p, c) => p || c == post._id, false))));
         }),
       ])
       .then(() => $scope.syncPosts("drafts"))
