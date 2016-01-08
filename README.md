@@ -5,11 +5,13 @@ A prototype application to experiment building a progressive app.
 ## Requirements
 
  * Node JS 5.2.0
- * A browser that [supports Service Worker](http://caniuse.com/#feat=serviceworkers)
+ * A browser that:
+  * [supports Service Worker](http://caniuse.com/#feat=serviceworkers)
+  * [supports Web Storage](http://caniuse.com/#feat=namevalue-storage)
 
 ## Usage
 
-```sh
+```ShellSession
 $ npm install
 $ npm start
 ```
@@ -21,10 +23,12 @@ The application is now serving at `http://localhost:3000/`.
 #### Setup
 
   - [x] npm-based project with bower dependencies
-  - [x] Express + Socket.io backend
+  - [x] Express backend
   - [x] File-based data store
   - [x] Angular frontend with Jade templates
   - [x] Basic styling with bootstrap + google material design icons
+  - [x] Service Worker for caching network layer and intercepting offline post requests.
+  - [x] Web Storage for storing offline posts & drafts.
 
 #### Draft functionality
 
