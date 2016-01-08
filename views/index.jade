@@ -9,8 +9,7 @@ html
     script(src='/bower_components/angular/angular.min.js')
     script(src='/bower_components/jquery/dist/jquery.min.js')
     script(src='/bower_components/bootstrap/dist/js/bootstrap.min.js')
-    script(src='/bower_components/mutex-promise/index.js')
-    script(src='/socket.io/socket.io.js')
+    script(src='/bower_components/angular-local-storage/dist/angular-local-storage.min.js')
     script(src='/indexcontroller.js')
   body
     div(class='row')
@@ -47,15 +46,15 @@ html
           h4
             | Drafts
           ul(class='list-unstyled')
-            li(ng-repeat='x in postModel.drafts.offline | orderObjectBy:"updated":true', ng-click="selectPost(x)", class='selectable-post')
-              span(class='post-heading') 
+            li(ng-repeat='x in offlinePostModel.drafts | orderObjectBy:"updated":true', ng-click="selectPost(x)", class='selectable-post')
+              span(class='post-heading')
                 | {{ x.title }}
               i(class='inline-icon')
                 | autorenew
               p(class='content')
                 | {{ x.content }}
-            li(ng-repeat='x in postModel.drafts.online | orderObjectBy:"updated":true', ng-click="selectPost(x)", class='selectable-post')
-              span(class='post-heading') 
+            li(ng-repeat='x in postModel.drafts | orderObjectBy:"updated":true', ng-click="selectPost(x)", class='selectable-post')
+              span(class='post-heading')
                 | {{ x.title }}
               p(class='content')
                 | {{ x.content }}
@@ -63,15 +62,15 @@ html
           h4
             | Live
           ul(class='list-unstyled')
-            li(ng-repeat='x in postModel.posts.offline | orderObjectBy:"updated":true', ng-click="selectPost(x)", class='selectable-post')
-              span(class='post-heading') 
+            li(ng-repeat='x in offlinePostModel.posts | orderObjectBy:"updated":true', ng-click="selectPost(x)", class='selectable-post')
+              span(class='post-heading')
                 | {{ x.title }}
               i(class='inline-icon')
                 | autorenew
               p(class='content')
                 | {{ x.content }}
-            li(ng-repeat='x in postModel.posts.online | orderObjectBy:"updated":true', ng-click="selectPost(x)", class='selectable-post')
-              span(class='post-heading') 
+            li(ng-repeat='x in postModel.posts | orderObjectBy:"updated":true', ng-click="selectPost(x)", class='selectable-post')
+              span(class='post-heading')
                 | {{ x.title }}
               p(class='content')
                 | {{ x.content }}
