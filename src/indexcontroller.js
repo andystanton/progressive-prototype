@@ -42,23 +42,19 @@ function guid() {
   return (S4() + S4() + "-" + S4() + "-4" + S4().substr(0, 3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
 }
 
-var app = angular.module('myApp', ['LocalStorageModule']);
+var app = angular.module('mori', ['LocalStorageModule']);
 
-app.filter('orderObjectBy', function() {
-  return function(items, field, reverse) {
+app.filter('orderObjectBy', () => {
+  return (items, field, reverse) => {
     var filtered = [];
-    angular.forEach(items, function(item) {
-      filtered.push(item);
-    });
-    filtered.sort(function(a, b) {
-      return (a[field] > b[field] ? 1 : -1);
-    });
+    angular.forEach(items, (item) => filtered.push(item));
+    filtered.sort((a, b) => (a[field] > b[field] ? 1 : -1));
     if (reverse) filtered.reverse();
     return filtered;
   };
 });
 
-app.config((localStorageServiceProvider) => localStorageServiceProvider.setPrefix('progressive-prototype'));
+app.config(localStorageServiceProvider => localStorageServiceProvider.setPrefix('progressive-prototype'));
 
 app.controller('posts', ($scope, $http, $timeout, localStorageService) => {
   $scope.syncPosts = (postType) => {
@@ -107,7 +103,7 @@ app.controller('posts', ($scope, $http, $timeout, localStorageService) => {
     $scope.savePost(post)
   }
 
-  $scope.withdrawPost = post => {
+  $scope.withdrawPost = (post) => {
     post.state = 'draft';
     $scope.savePost(post);
   }
