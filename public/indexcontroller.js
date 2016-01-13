@@ -1,28 +1,34 @@
-"use strict"
+"use strict";
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js', { scope: '/' })
-    .then(registration => console.log("Service Worker Registered"));
+  navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(function (registration) {
+    return console.log("Service Worker Registered");
+  });
 
-  navigator.serviceWorker.ready
-    .then(registration => console.log("Service Worker Ready"));
+  navigator.serviceWorker.ready.then(function (registration) {
+    return console.log("Service Worker Ready");
+  });
 }
 
-class PostModel {
-  constructor(id) {
-    this.id = id;
-    this.posts = {};
-    this.drafts = {};
-  }
-}
+var PostModel = function PostModel(id) {
+  _classCallCheck(this, PostModel);
+
+  this.id = id;
+  this.posts = {};
+  this.drafts = {};
+};
 
 function addPost(postModel, post) {
   postModel.posts[post[postModel.id]] = post;
 }
 
 function addPosts(postModel, posts) {
-  postModel.posts = {}
-  posts.forEach(post => addPost(postModel, post))
+  postModel.posts = {};
+  posts.forEach(function (post) {
+    return addPost(postModel, post);
+  });
 }
 
 function addDraft(postModel, draft) {
@@ -30,13 +36,15 @@ function addDraft(postModel, draft) {
 }
 
 function addDrafts(postModel, drafts) {
-  postModel.drafts = {}
-  drafts.forEach(draft => addDraft(postModel, draft))
+  postModel.drafts = {};
+  drafts.forEach(function (draft) {
+    return addDraft(postModel, draft);
+  });
 }
 
 function guid() {
   function S4() {
-    return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+    return ((1 + Math.random()) * 0x10000 | 0).toString(16).substring(1);
   }
 
   return (S4() + S4() + "-" + S4() + "-4" + S4().substr(0, 3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
@@ -44,106 +52,109 @@ function guid() {
 
 var app = angular.module('myApp', ['LocalStorageModule']);
 
-app.filter('orderObjectBy', function() {
-  return function(items, field, reverse) {
+app.filter('orderObjectBy', function () {
+  return function (items, field, reverse) {
     var filtered = [];
-    angular.forEach(items, function(item) {
+    angular.forEach(items, function (item) {
       filtered.push(item);
     });
-    filtered.sort(function(a, b) {
-      return (a[field] > b[field] ? 1 : -1);
+    filtered.sort(function (a, b) {
+      return a[field] > b[field] ? 1 : -1;
     });
     if (reverse) filtered.reverse();
     return filtered;
   };
 });
 
-app.config((localStorageServiceProvider) => localStorageServiceProvider.setPrefix('progressive-prototype'));
+app.config(function (localStorageServiceProvider) {
+  return localStorageServiceProvider.setPrefix('progressive-prototype');
+});
 
-app.controller('posts', ($scope, $http, $timeout, localStorageService) => {
-  $scope.syncPosts = (postType) => {
-    return Promise.all(Object.keys(localStorageService.get("offlinePostModel")[postType]).map(key => {
+app.controller('posts', function ($scope, $http, $timeout, localStorageService) {
+  $scope.syncPosts = function (postType) {
+    return Promise.all(Object.keys(localStorageService.get("offlinePostModel")[postType]).map(function (key) {
       var draft = localStorageService.get("offlinePostModel")[postType][key];
-      return $scope.savePost(draft, true).then(online => {
-        if (online) $scope.updatePostModel(postModel => delete postModel[postType][key]);
-      })
+      return $scope.savePost(draft, true).then(function (online) {
+        if (online) $scope.updatePostModel(function (postModel) {
+          return delete postModel[postType][key];
+        });
+      });
     }));
-  }
+  };
 
-  $scope.newPost = () => {
+  $scope.newPost = function () {
     $scope.editpost = {
       state: 'draft'
     };
     $scope.mode = 'new';
-  }
+  };
 
-  $scope.selectPost = (post) => {
+  $scope.selectPost = function (post) {
     $scope.editpost = JSON.parse(JSON.stringify(post));
     $scope.mode = 'edit';
-  }
+  };
 
-  $scope.savePost = (post, isSync) => {
+  $scope.savePost = function (post, isSync) {
     if (!('_tmpId' in post)) post._tmpId = guid();
     if (!isSync) post.updated = new Date().toJSON();
 
-    return $http.put("/post", post).then(response => {
+    return $http.put("/post", post).then(function (response) {
       var online = JSON.parse(response.headers('X-Online'));
       if ($scope.mode == 'new' && (!isSync || online)) {
-        $scope.newPost()
+        $scope.newPost();
       }
-      if (!online) $scope.updatePostModel(postModel => {
+      if (!online) $scope.updatePostModel(function (postModel) {
         if (post.state == 'published') {
-          addPost(postModel, post)
+          addPost(postModel, post);
         } else {
-          addDraft(postModel, post)
+          addDraft(postModel, post);
         }
       });
       return online;
     });
-  }
+  };
 
-  $scope.publishPost = (post) => {
+  $scope.publishPost = function (post) {
     post.state = 'published';
-    $scope.savePost(post)
-  }
+    $scope.savePost(post);
+  };
 
-  $scope.withdrawPost = post => {
+  $scope.withdrawPost = function (post) {
     post.state = 'draft';
     $scope.savePost(post);
-  }
+  };
 
-  $scope.deletePost = (post) => {
-    console.log(`deleting ${post._id}`)
-    $http.delete(`/post/${post._id}`);
-    $scope.newPost()
-  }
+  $scope.deletePost = function (post) {
+    console.log('deleting ' + post._id);
+    $http.delete('/post/' + post._id);
+    $scope.newPost();
+  };
 
-  $scope.updatePostModel = (update) => {
+  $scope.updatePostModel = function (update) {
     var postModel = localStorageService.get("offlinePostModel");
     update(postModel);
     localStorageService.set("offlinePostModel", postModel);
     $scope.offlinePostModel = postModel;
-  }
-
-  $scope.tick = () => {
-    Promise.all([
-        $http.get("http://localhost:3000/posts")
-        .then(response => {
-          addPosts($scope.postModel, response.data);
-        }),
-        $http.get("http://localhost:3000/drafts")
-        .then(response => {
-          addDrafts($scope.postModel, response.data);
-        }),
-      ])
-      .then(() => $scope.syncPosts("drafts"))
-      .then(() => $scope.syncPosts("posts"))
-      .catch(error => console.log("something went wrong: " + error))
-      .then(() => $timeout($scope.tick, 500));
   };
 
-  $scope.initialiseModel = () => {
-    var offlinePostModel = localStorageService.get("offlinePostModel")
+  $scope.tick = function () {
+    Promise.all([$http.get("http://localhost:3000/posts").then(function (response) {
+      addPosts($scope.postModel, response.data);
+    }), $http.get("http://localhost:3000/drafts").then(function (response) {
+      addDrafts($scope.postModel, response.data);
+    })]).then(function () {
+      return $scope.syncPosts("drafts");
+    }).then(function () {
+      return $scope.syncPosts("posts");
+    }).catch(function (error) {
+      return console.log("something went wrong: " + error);
+    }).then(function () {
+      return $timeout($scope.tick, 500);
+    });
+  };
+
+  $scope.initialiseModel = function () {
+    var offlinePostModel = localStorageService.get("offlinePostModel");
     if (!offlinePostModel) offlinePostModel = new PostModel("_tmpId");
     localStorageService.set("offlinePostModel", offlinePostModel);
 
